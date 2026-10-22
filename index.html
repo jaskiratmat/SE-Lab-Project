@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HomeLabOS - Infrastructure Management Control Plane</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body class="theme-dark">
+  <div id="app" class="app-container">
+    <!-- Collapsible / Responsive Sidebar -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand">
+        <div class="brand-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
+            <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
+            <line x1="6" y1="6" x2="6.01" y2="6"></line>
+            <line x1="6" y1="18" x2="6.01" y2="18"></line>
+            <circle cx="17" cy="6" r="1"></circle>
+            <circle cx="17" cy="18" r="1"></circle>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <span class="brand-title">HomeLab<span class="brand-accent">OS</span></span>
+          <span class="brand-subtitle">Control Plane v1.4.0</span>
+        </div>
+        <button class="mobile-toggle-btn" id="mobileSidebarClose" aria-label="Close Sidebar">&times;</button>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-section-title">CONTROL PLANE</div>
+        <button class="nav-item active" data-tab="dashboard">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="M18 9l-5 5-4-4-3 3"/></svg>
+          <span>Telemetry Dashboard</span>
+        </button>
+        <button class="nav-item" data-tab="nodes">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="8" rx="2"/><rect x="2" y="14" width="20" height="8" rx="2"/><line x1="6" y1="6" x2="6.01" y2="6"/><line x1="6" y1="18" x2="6.01" y2="18"/></svg>
+          <span>Host Nodes</span>
+          <span class="badge badge-node-count" id="badgeNodeCount">3</span>
+        </button>
+        <button class="nav-item" data-tab="containers">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+          <span>Containers & Services</span>
+          <span class="badge badge-container-count" id="badgeContainerCount">5</span>
+        </button>
+        <button class="nav-item" data-tab="storage">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6c0 1.66 3.58 3 8 3s8-1.34 8-3-3.58-3-8-3-8 1.34-8 3z"/><path d="M4 6v6c0 1.66 3.58 3 8 3s8-1.34 8-3V6"/><path d="M4 12v6c0 1.66 3.58 3 8 3s8-1.34 8-3v-6"/></svg>
+          <span>Storage & Volumes</span>
+        </button>
+        <button class="nav-item" data-tab="network">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+          <span>Network & Ports</span>
+        </button>
+
+        <div class="nav-section-title">ADMINISTRATION</div>
+        <button class="nav-item" data-tab="rbac">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          <span>RBAC & Security</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="system-status-indicator">
+          <span class="status-dot pulse-green"></span>
+          <div class="status-info">
+            <span class="status-title">Daemon Agent Live</span>
+            <span class="status-time" id="sysUptime">Poll: 2000ms</span>
+          </div>
+        </div>
+        <button class="btn btn-xs btn-outline-danger" id="btnResetData" title="Reset to default seed data">
+          <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+          Reset Demo State
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <div class="main-wrapper">
+      <!-- Top Navigation Bar -->
+      <header class="topbar">
+        <div class="topbar-left">
+          <button class="menu-toggle" id="menuToggle" aria-label="Toggle Navigation">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+          </button>
+          <div class="breadcrumb" id="breadcrumbNav">
+            <span class="breadcrumb-root">HomeLab</span>
+            <span class="breadcrumb-separator">/</span>
+            <span class="breadcrumb-current" id="breadcrumbActive">Telemetry Dashboard</span>
+          </div>
+        </div>
+
+        <div class="topbar-right">
+          <!-- Quick Status Badges -->
+          <div class="quick-stats-bar">
+            <div class="quick-stat">
+              <span class="stat-label">Nodes:</span>
+              <span class="stat-val text-cyan" id="quickNodeStatus">2/3 Online</span>
+            </div>
+            <div class="quick-stat">
+              <span class="stat-label">Containers:</span>
+              <span class="stat-val text-emerald" id="quickContainerStatus">2 Running</span>
+            </div>
+          </div>
+
+          <!-- User Profile & RBAC Switcher -->
+          <div class="user-profile-menu">
+            <div class="user-badge" id="userBadgeTrigger">
+              <div class="user-avatar" id="userAvatar">A</div>
+              <div class="user-details">
+                <span class="user-name" id="currentUserName">Alex Vance</span>
+                <span class="user-role badge-role-admin" id="currentUserRole">ADMIN</span>
+              </div>
+              <svg class="chevron-down" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </div>
+
+            <!-- User Switcher Dropdown -->
+            <div class="dropdown-menu user-dropdown hidden" id="userDropdown">
+              <div class="dropdown-header">Switch Simulated Session</div>
+              <button class="dropdown-item active-user" id="switchAdminBtn">
+                <div class="role-icon-box admin-box">AD</div>
+                <div>
+                  <strong>Admin Account</strong>
+                  <div class="text-xs text-muted">Full root privileges & control</div>
+                </div>
+              </button>
+              <button class="dropdown-item" id="switchStandardBtn">
+                <div class="role-icon-box user-box">ST</div>
+                <div>
+                  <strong>Standard User</strong>
+                  <div class="text-xs text-muted">Restricted: Read/Restart only</div>
+                </div>
+              </button>
+              <div class="dropdown-divider"></div>
+              <div class="dropdown-note">
+                <small>RBAC dynamically hides & blocks destructive actions in real-time.</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Main Dynamic Content Views -->
+      <main class="content-body">
+        
+        <!-- ============================================== -->
+        <!-- TAB 1: REAL-TIME MONITORING DASHBOARD -->
+        <!-- ============================================== -->
+        <section class="tab-pane active" id="tab-dashboard">
+          <div class="view-header">
+            <div>
+              <h1 class="view-title">Infrastructure Telemetry Dashboard</h1>
+              <p class="view-description">Live hardware utilization, dynamic cluster load, and real-time event audit logs.</p>
+            </div>
+            <div class="view-actions">
+              <button class="btn btn-sm btn-primary" id="btnQuickDeployModal">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                Deploy Container
+              </button>
+            </div>
+          </div>
+
+          <!-- Alert Banner (dynamic threshold warning) -->
+          <div class="alert-banner hidden" id="safetyAlertBanner">
+            <div class="alert-icon">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </div>
+            <div class="alert-content">
+              <strong>Telemetry Warning:</strong> High resource utilization threshold reached! <span id="alertDetailText">node-01 memory at 92.4%</span>
+            </div>
+            <button class="alert-dismiss" id="btnDismissAlert">&times;</button>
+          </div>
+
+          <!-- Top Metric Cards Grid -->
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div class="stat-card-header">
+                <span class="stat-title">Cluster CPU Load</span>
+                <span class="stat-tag tag-cyan">Dynamic Avg</span>
+              </div>
+              <div class="stat-value-row">
+                <span class="stat-huge-number" id="metricCpuVal">42.5%</span>
+                <span class="stat-trend" id="metricCpuTrend">~ Normal</span>
+              </div>
+              <div class="progress-bar-bg">
+                <div class="progress-bar-fill fill-cyan" id="metricCpuBar" style="width: 42.5%"></div>
+              </div>
+              <div class="stat-footnote">16 Cores Total across active nodes</div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-card-header">
+                <span class="stat-title">Memory Allocation</span>
+                <span class="stat-tag tag-purple">RAM</span>
+              </div>
+              <div class="stat-value-row">
+                <span class="stat-huge-number" id="metricRamVal">68.2%</span>
+                <span class="stat-trend text-amber" id="metricRamSub">65.5 / 96 GB</span>
+              </div>
+              <div class="progress-bar-bg">
+                <div class="progress-bar-fill fill-purple" id="metricRamBar" style="width: 68.2%"></div>
+              </div>
+              <div class="stat-footnote">ZFS ARC Cache + Docker containers</div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-card-header">
+                <span class="stat-title">Storage Utilization</span>
+                <span class="stat-tag tag-emerald">Pools</span>
+              </div>
+              <div class="stat-value-row">
+                <span class="stat-huge-number" id="metricStorageVal">53.4%</span>
+                <span class="stat-trend text-emerald">16.0 / 30 TB</span>
+              </div>
+              <div class="progress-bar-bg">
+                <div class="progress-bar-fill fill-emerald" id="metricStorageBar" style="width: 53.4%"></div>
+              </div>
+              <div class="stat-footnote">RAID-Z2 + NVMe Fast Pools</div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-card-header">
+                <span class="stat-title">Network Throughput</span>
+                <span class="stat-tag tag-blue">I/O</span>
+              </div>
+              <div class="stat-value-row">
+                <span class="stat-huge-number" id="metricNetVal">34.8 MB/s</span>
+                <span class="stat-trend text-cyan">▲ 4.2 / ▼ 30.6</span>
+              </div>
+              <div class="progress-bar-bg">
+                <div class="progress-bar-fill fill-blue" id="metricNetBar" style="width: 35%"></div>
+              </div>
+              <div class="stat-footnote">10GbE SFP+ Uplink Trunk</div>
+            </div>
+          </div>
+
+          <!-- Live Graphs & Activity Feeds Row -->
+          <div class="dashboard-grid-row">
+            <!-- Canvas Graph Card -->
+            <div class="card graph-card">
+              <div class="card-header">
+                <div>
+                  <h3 class="card-title">Real-Time Cluster Telemetry Streams</h3>
+                  <p class="card-subtitle">Live rolling sampling (2-second interval) via host daemon polling</p>
+                </div>
+                <div class="chart-legend">
+                  <span class="legend-item"><span class="legend-dot color-cpu"></span> CPU %</span>
+                  <span class="legend-item"><span class="legend-dot color-ram"></span> RAM %</span>
+                  <span class="legend-item"><span class="legend-dot color-net"></span> Net (x2)</span>
+                </div>
+              </div>
+              <div class="chart-container">
+                <canvas id="liveTelemetryCanvas" width="700" height="230"></canvas>
+              </div>
+            </div>
+
+            <!-- Quick Service Snapshot -->
+            <div class="card snapshot-card">
+              <div class="card-header">
+                <h3 class="card-title">Container Fleet Health</h3>
+                <span class="badge badge-emerald" id="runningCountBadge">2 Active</span>
+              </div>
+              <div class="quick-container-list" id="dashboardContainerSnapshot">
+                <!-- Populated via JS -->
+              </div>
+              <div class="card-footer-action">
+                <button class="btn btn-block btn-outline" data-tab="containers">Manage All Containers &rarr;</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom: Live Event Log Terminal Drawer -->
+          <div class="card log-terminal-card">
+            <div class="card-header">
+              <div class="terminal-title-group">
+                <div class="terminal-dots">
+                  <span class="t-dot red"></span>
+                  <span class="t-dot yellow"></span>
+                  <span class="t-dot green"></span>
+                </div>
+                <h3 class="card-title">Orchestrator & Host Daemon Event Log</h3>
+              </div>
+              <div class="terminal-actions">
+                <button class="btn btn-xs btn-outline" id="btnClearLogs">Clear Log</button>
+                <button class="btn btn-xs btn-outline" id="btnSimulateLoad">Simulate Heavy Spike</button>
+              </div>
+            </div>
+            <div class="terminal-window" id="eventTerminalWindow">
+              <!-- Logs populated via JS -->
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================================== -->
+        <!-- TAB 2: HOST NODE MANAGEMENT -->
+        <!-- ============================================== -->
+        <section class="tab-pane" id="tab-nodes">
+          <div class="view-header">
+            <div>
+              <h1 class="view-title">Bare-Metal & Virtualized Host Nodes</h1>
+              <p class="view-description">Physical servers and virtual nodes running Linux across x86_64 and ARM64.</p>
+            </div>
+            <div class="view-actions">
+              <button class="btn btn-sm btn-primary rbac-admin-only" id="btnAddNodeModal">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                Register Host Node
+              </button>
+            </div>
+          </div>
+
+          <!-- Nodes Grid -->
+          <div class="nodes-grid" id="nodesContainer">
+            <!-- Dynamic Nodes Rendered by JS -->
+          </div>
+        </section>
+
+        <!-- ============================================== -->
+        <!-- TAB 3: CONTAINER SERVICE ORCHESTRATION -->
+        <!-- ============================================== -->
+        <section class="tab-pane" id="tab-containers">
+          <div class="view-header">
+            <div>
+              <h1 class="view-title">Container Service Orchestration</h1>
+              <p class="view-description">Docker & Podman container lifecycle management, NAT port bindings, and auto-restart.</p>
+            </div>
+            <div class="view-actions">
+              <button class="btn btn-sm btn-primary rbac-admin-only" id="btnOpenDeployModal">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                Deploy New Service
+              </button>
+            </div>
+          </div>
+
+          <!-- Filters bar -->
+          <div class="table-toolbar">
+            <div class="search-box">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+              <input type="text" id="containerSearchInput" placeholder="Filter by container name, image, or node...">
+            </div>
+            <div class="filter-group">
+              <select id="containerStateFilter" class="form-select form-select-sm">
+                <option value="ALL">All Lifecycle States</option>
+                <option value="Running">Running</option>
+                <option value="Paused">Paused</option>
+                <option value="Stopped">Stopped</option>
+                <option value="Crashed">Crashed / Error</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Container Table -->
+          <div class="card table-card">
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Service Name</th>
+                    <th>Image & Tag</th>
+                    <th>Assigned Node</th>
+                    <th>Port Bindings (Host:Internal)</th>
+                    <th>Lifecycle State</th>
+                    <th>Attached Volume</th>
+                    <th class="text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="containersTableBody">
+                  <!-- Rendered dynamically by JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================================== -->
+        <!-- TAB 4: STORAGE VOLUME MANAGEMENT -->
+        <!-- ============================================== -->
+        <section class="tab-pane" id="tab-storage">
+          <div class="view-header">
+            <div>
+              <h1 class="view-title">Storage Pools & Persistent Volumes</h1>
+              <p class="view-description">ZFS datasets, BTRFS subvolumes, EXT4 mount points, and backup schedules.</p>
+            </div>
+            <div class="view-actions">
+              <button class="btn btn-sm btn-primary rbac-admin-only" id="btnAddVolumeModal">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                Create Volume / Pool
+              </button>
+            </div>
+          </div>
+
+          <!-- Storage Pools Grid -->
+          <div class="storage-grid" id="storagePoolsContainer">
+            <!-- Dynamic storage pools rendered here -->
+          </div>
+
+          <!-- Storage Bindings Table -->
+          <div class="card table-card mt-6">
+            <div class="card-header">
+              <h3 class="card-title">Container Volume Mount Bindings</h3>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Volume Name</th>
+                    <th>Filesystem Type</th>
+                    <th>Host Path</th>
+                    <th>Bound Container</th>
+                    <th>Quota Size</th>
+                    <th>Backup Cron</th>
+                    <th class="text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody id="storageBindingsTableBody">
+                  <!-- Rendered by JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================================== -->
+        <!-- TAB 5: NETWORK & PORT MANAGEMENT -->
+        <!-- ============================================== -->
+        <section class="tab-pane" id="tab-network">
+          <div class="view-header">
+            <div>
+              <h1 class="view-title">Network & Host Port Registry</h1>
+              <p class="view-description">Active NAT port bindings and real-time collision detection matrix.</p>
+            </div>
+            <div class="view-actions">
+              <button class="btn btn-sm btn-outline" id="btnTestPortConflict">
+                Simulate Port Collision Check
+              </button>
+            </div>
+          </div>
+
+          <!-- Port Allocation Summary Cards -->
+          <div class="port-summary-row">
+            <div class="summary-chip">
+              <span class="chip-label">Allocated Ports:</span>
+              <strong class="chip-val" id="allocatedPortsCount">7</strong>
+            </div>
+            <div class="summary-chip chip-success">
+              <span class="chip-label">Collision Status:</span>
+              <strong class="chip-val" id="collisionStatusText">CLEAN (No Overlaps)</strong>
+            </div>
+            <div class="summary-chip">
+              <span class="chip-label">Gateway IPs:</span>
+              <strong class="chip-val">192.168.1.1/24</strong>
+            </div>
+          </div>
+
+          <div class="card table-card">
+            <div class="card-header">
+              <h3 class="card-title">Host NAT Port Mappings</h3>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Host Port</th>
+                    <th>Protocol</th>
+                    <th>Container Service</th>
+                    <th>Internal Port</th>
+                    <th>Host Node</th>
+                    <th>Security / Traffic Status</th>
+                  </tr>
+                </thead>
+                <tbody id="portsTableBody">
+                  <!-- Rendered via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================================== -->
+        <!-- TAB 6: RBAC & SECURITY -->
+        <!-- ============================================== -->
+        <section class="tab-pane" id="tab-rbac">
+          <div class="view-header">
+            <div>
+              <h1 class="view-title">Role-Based Access Control (RBAC) & Security</h1>
+              <p class="view-description">User profile management, Argon2/Bcrypt hash verification, MFA state, and privilege matrix.</p>
+            </div>
+            <div class="view-actions">
+              <button class="btn btn-sm btn-outline" id="btnToggleMFA">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                Toggle MFA Verification
+              </button>
+            </div>
+          </div>
+
+          <!-- Role Profiles Comparison Grid -->
+          <div class="rbac-grid">
+            <div class="card rbac-profile-card" id="adminProfileCard">
+              <div class="profile-header">
+                <div class="role-badge-large badge-role-admin">ADMINISTRATOR</div>
+                <div class="profile-avatar-large">AD</div>
+                <h3 class="profile-name">Alex Vance</h3>
+                <span class="profile-email">admin@homelab.local</span>
+              </div>
+              <div class="profile-meta">
+                <div class="meta-row">
+                  <span>Authentication:</span>
+                  <strong>Argon2id (m=65536, t=3)</strong>
+                </div>
+                <div class="meta-row">
+                  <span>MFA Status:</span>
+                  <span class="badge badge-emerald" id="adminMfaBadge">TOTP Active</span>
+                </div>
+                <div class="meta-row">
+                  <span>Profile Constraint:</span>
+                  <code>USER_LOGIN 1:1 ADMIN</code>
+                </div>
+              </div>
+              <div class="profile-action-btn">
+                <button class="btn btn-sm btn-block btn-primary" id="btnActivateAdmin">Switch To This Session</button>
+              </div>
+            </div>
+
+            <div class="card rbac-profile-card" id="userProfileCard">
+              <div class="profile-header">
+                <div class="role-badge-large badge-role-user">STANDARD USER</div>
+                <div class="profile-avatar-large">ST</div>
+                <h3 class="profile-name">Jordan Lee</h3>
+                <span class="profile-email">jordan@homelab.local</span>
+              </div>
+              <div class="profile-meta">
+                <div class="meta-row">
+                  <span>Authentication:</span>
+                  <strong>Bcrypt (rounds=12)</strong>
+                </div>
+                <div class="meta-row">
+                  <span>MFA Status:</span>
+                  <span class="badge badge-amber">Optional</span>
+                </div>
+                <div class="meta-row">
+                  <span>Profile Constraint:</span>
+                  <code>USER_LOGIN 1:1 STANDARD_USER</code>
+                </div>
+              </div>
+              <div class="profile-action-btn">
+                <button class="btn btn-sm btn-block btn-outline" id="btnActivateStandard">Switch To This Session</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Permissions Matrix Table -->
+          <div class="card table-card mt-6">
+            <div class="card-header">
+              <h3 class="card-title">Enforced Privilege & Authorization Matrix</h3>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Capability / Operational Action</th>
+                    <th>Scope</th>
+                    <th>Admin Role</th>
+                    <th>Standard User</th>
+                    <th>Current Session Rights</th>
+                  </tr>
+                </thead>
+                <tbody id="rbacMatrixTableBody">
+                  <!-- Populated by JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- MODAL: DEPLOY CONTAINER SERVICE -->
+  <!-- ============================================== -->
+  <div class="modal-backdrop hidden" id="deployContainerModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">Deploy Containerized Application</h3>
+        <button class="modal-close-btn" id="closeDeployModal">&times;</button>
+      </div>
+      <form id="deployContainerForm">
+        <div class="modal-body">
+          <div class="form-group">
+            <label class="form-label">Service Template Presets</label>
+            <div class="preset-badges">
+              <button type="button" class="preset-btn active" data-preset="nginx">Nginx Proxy</button>
+              <button type="button" class="preset-btn" data-preset="pihole">Pi-hole DNS</button>
+              <button type="button" class="preset-btn" data-preset="plex">Plex Media</button>
+              <button type="button" class="preset-btn" data-preset="nextcloud">Nextcloud</button>
+              <button type="button" class="preset-btn" data-preset="custom">Custom Image</button>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="inputServiceName">Service Name *</label>
+              <input type="text" id="inputServiceName" class="form-input" required placeholder="e.g. nginx-proxy-manager">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="inputContainerImage">Container Image & Tag *</label>
+              <input type="text" id="inputContainerImage" class="form-input" required placeholder="e.g. jc21/nginx-proxy-manager:latest">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="selectHostNode">Target Host Node *</label>
+              <select id="selectHostNode" class="form-select" required>
+                <!-- Populated dynamically -->
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="selectRestartPolicy">Restart Policy</label>
+              <select id="selectRestartPolicy" class="form-select">
+                <option value="unless-stopped">Unless-Stopped</option>
+                <option value="always">Always</option>
+                <option value="on-failure">On-Failure</option>
+                <option value="no">None</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="inputHostPort">External Host Port *</label>
+              <input type="number" id="inputHostPort" class="form-input" min="1" max="65535" required placeholder="8080">
+              <div class="port-feedback" id="portFeedback"></div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="inputInternalPort">Internal Container Port *</label>
+              <input type="number" id="inputInternalPort" class="form-input" min="1" max="65535" required placeholder="80">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="selectStorageVolume">Storage Volume Mount</label>
+              <select id="selectStorageVolume" class="form-select">
+                <!-- Populated by JS -->
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="inputMountPath">Internal Mount Path</label>
+              <input type="text" id="inputMountPath" class="form-input" placeholder="/data">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="inputEnvVars">Environment Variables (KEY=VALUE per line)</label>
+            <textarea id="inputEnvVars" class="form-textarea" rows="2" placeholder="PUID=1000&#10;PGID=1000&#10;TZ=UTC"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" id="cancelDeployModal">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btnSubmitDeploy">
+            <span class="btn-spinner hidden" id="deploySpinner"></span>
+            Pull & Deploy Container
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- MODAL: ADD HOST NODE -->
+  <!-- ============================================== -->
+  <div class="modal-backdrop hidden" id="addNodeModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">Register New Host Server Node</h3>
+        <button class="modal-close-btn" id="closeAddNodeModal">&times;</button>
+      </div>
+      <form id="addNodeForm">
+        <div class="modal-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="inputNodeHostname">Node Hostname *</label>
+              <input type="text" id="inputNodeHostname" class="form-input" required placeholder="node-03-pi.homelab.lan">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="inputNodeIp">Static IP Address *</label>
+              <input type="text" id="inputNodeIp" class="form-input" required placeholder="192.168.1.15">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="selectNodeOs">Operating System *</label>
+              <select id="selectNodeOs" class="form-select" required>
+                <option value="Ubuntu 24.04 LTS">Ubuntu 24.04 LTS</option>
+                <option value="Debian 12 Bookworm">Debian 12 Bookworm</option>
+                <option value="TrueNAS SCALE (Debian)">TrueNAS SCALE (Debian)</option>
+                <option value="Alpine Linux 3.20">Alpine Linux 3.20</option>
+                <option value="Proxmox VE 8.2">Proxmox VE 8.2</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="selectNodeArch">Architecture *</label>
+              <select id="selectNodeArch" class="form-select" required>
+                <option value="x86_64">x86_64 (Intel / AMD)</option>
+                <option value="ARM64">ARM64 (aarch64 / Raspberry Pi)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="inputNodeCores">CPU Cores</label>
+              <input type="number" id="inputNodeCores" class="form-input" min="1" max="128" value="8">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="inputNodeRam">RAM Capacity (GB)</label>
+              <input type="number" id="inputNodeRam" class="form-input" min="1" max="1024" value="32">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="inputNodeDisk">Disk Storage (GB)</label>
+              <input type="number" id="inputNodeDisk" class="form-input" min="10" max="100000" value="1000">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" id="cancelAddNodeModal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Enroll Host Node</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- MODAL: CREATE STORAGE VOLUME -->
+  <!-- ============================================== -->
+  <div class="modal-backdrop hidden" id="addVolumeModal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">Provision Storage Pool / Dataset</h3>
+        <button class="modal-close-btn" id="closeAddVolumeModal">&times;</button>
+      </div>
+      <form id="addVolumeForm">
+        <div class="modal-body">
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="inputVolName">Volume / Dataset Name *</label>
+              <input type="text" id="inputVolName" class="form-input" required placeholder="app_database_zfs">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="selectVolFs">Filesystem Type *</label>
+              <select id="selectVolFs" class="form-select" required>
+                <option value="ZFS">ZFS Dataset (ZPOOL)</option>
+                <option value="BTRFS">BTRFS Subvolume</option>
+                <option value="EXT4">EXT4 Local Filesystem</option>
+                <option value="NFS">NFS Network Share</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="inputVolMount">Mount Point Path *</label>
+              <input type="text" id="inputVolMount" class="form-input" required placeholder="/mnt/tank/app_data">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="inputVolQuota">Quota / Allocated Size (GB) *</label>
+              <input type="number" id="inputVolQuota" class="form-input" min="1" max="100000" value="500">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="inputVolCron">Automated Snapshot / Backup Cron</label>
+            <input type="text" id="inputVolCron" class="form-input" value="0 2 * * * (Daily at 02:00 UTC)">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" id="cancelAddVolumeModal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Provision Storage Volume</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
