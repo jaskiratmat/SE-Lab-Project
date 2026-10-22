@@ -9,27 +9,6 @@ A modern, responsive, zero-dependency single-page proof-of-concept control plane
 
 ---
 
-## 🚀 Live Demo & Quick Start
-
-Because **HomeLabOS** requires **zero backend servers, compilers, or Node/npm installations**, it can be launched immediately:
-
-### Option 1: Direct Local Execution
-Simply double-click [`index.html`](index.html) or open it with any web browser (Chrome, Edge, Firefox, Safari).
-
-### Option 2: Local HTTP Server (Python)
-```bash
-python -m http.server 8080
-# Open http://localhost:8080 in your browser
-```
-
-### Option 3: GitHub Pages Deployment
-1. Push this repository to GitHub.
-2. Navigate to **Settings** &rarr; **Pages**.
-3. Under **Branch**, select `main` (or `master`) and folder `/ (root)`.
-4. Click **Save** — your live dashboard will be accessible at `https://<username>.github.io/<repo-name>/`.
-
----
-
 ## 📑 Core Functional Modules
 
 | Module | Features & Capabilities |
